@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed:users": "tsx scripts/seed-users.ts",
-    "seed:calendar": "tsx scripts/seed-calendar.ts",
-    "seed:agenda": "tsx scripts/seed-recording-schedule.ts"
+    "seed:users": "tsx --env-file=.env.local scripts/seed-users.ts",
+    "seed:calendar": "tsx --env-file=.env.local scripts/seed-calendar.ts",
+    "seed:agenda": "tsx --env-file=.env.local scripts/seed-recording-schedule.ts"
   },
   "dependencies": {
     "firebase": "^11.0.0",

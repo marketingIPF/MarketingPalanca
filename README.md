@@ -38,7 +38,13 @@ cp .env.local.example .env.local
 ```
 
 - Las tres `NEXT_PUBLIC_FIREBASE_*` salen de Firebase Console → Project Settings → General.
-- `FIREBASE_SERVICE_ACCOUNT` es el JSON del service account (Project Settings → Service accounts → Generate new private key), **pegado en una sola línea**.
+- `FIREBASE_SERVICE_ACCOUNT` es el JSON del service account (Project Settings → Service accounts → Generate new private key).
+  - **En Vercel**: puedes pegar el JSON tal cual lo descargas (con saltos de línea), la caja de texto de Environment Variables lo admite entero.
+  - **En `.env.local` (Codespaces/local)**: el archivo es de una variable por línea, así que el JSON debe ir **compactado a una sola línea**. Si tienes el archivo descargado en Codespaces, cómpactalo así:
+    ```bash
+    node -e "console.log(JSON.stringify(require('./ruta/al/archivo-service-account.json')))"
+    ```
+    Copia la salida completa y pégala como valor de `FIREBASE_SERVICE_ACCOUNT` en `.env.local`, entre comillas simples si tu editor no las añade solo.
 - `SLACK_WEBHOOK_URL` sale de la app de Slack del canal donde quieras recibir la agenda (Incoming Webhooks).
 
 ### 3. Publicar las reglas de Firestore
@@ -51,32 +57,49 @@ firebase deploy --only firestore:rules
 
 **Cada vez que cambies las reglas hay que repetir este paso — no es automático.**
 
-### 4. Sembrar datos (en este orden)
+### 4. Sembrar datos (en este orden, desde Codespaces)
+
+Como `marketinghub-…` es un proyecto de Firebase **nuevo** (no el mismo que
+"La Liga"), no existe ninguna cuenta todavía. El primer script crea **tanto
+las cuentas de Firebase Auth como los perfiles de Firestore** en un solo paso.
 
 ```bash
-npm run seed:users     # roster de agentes (reutilizado de la app "La Liga")
+# 1. Asegúrate de tener Node 22
+nvm install 22 && nvm use 22
+
+# 2. Instala dependencias si no lo has hecho
+npm install
+
+# 3. Rellena .env.local (paso 2 de este README) si no lo has hecho ya —
+#    los scripts de seed lo cargan solos, no hace falta exportar nada a mano
+
+# 4. Ejecuta los seeds en este orden
+npm run seed:users     # crea Auth + Firestore de los ~26 usuarios (admins + agentes)
 npm run seed:calendar  # contenidos de ejemplo, incluido el reel del 1 de julio
 npm run seed:agenda    # enlaza 3 agentes a 3 contenidos pendientes de grabar
 ```
 
-El seed de usuarios usa `merge: true`, así que se puede re-ejecutar sin
-perder estadísticas ya acumuladas. El de agenda depende de que ya existan
-los contenidos del seed de calendario.
+`seed:users` es **idempotente**: si una cuenta ya existe, actualiza su
+email/nombre en vez de fallar, y el perfil de Firestore usa `merge: true`
+para no pisar estadísticas ya acumuladas.
 
-### 5. Crear las cuentas de Firebase Auth
+**Contraseña inicial de cada cuenta = su número de teléfono** (misma
+convención que usaste en "La Liga"). Pedro, Roberto y Almudena no tienen
+un teléfono de agente asociado en el roster, así que su contraseña inicial
+es `CambiarPassword2026` — coméntaselo para que la cambien en cuanto entren
+(la app todavía no tiene forzado de cambio de contraseña en el primer login;
+si lo quieres, es una mejora sencilla para más adelante).
 
-Los `uid` de `scripts/seed-users.ts` coinciden con los agentes de La Liga,
-así que si usas el mismo proyecto de Firebase, esas cuentas ya existen.
-Falta crear la de **Pedro** manualmente en Firebase Console → Authentication,
-con el mismo `uid: pedro` que usa el seed (o ajusta el seed a su `uid` real).
+El seed de agenda depende de que ya existan los contenidos del seed de
+calendario, así que respeta el orden.
 
-### 6. Arrancar en local
+### 5. Arrancar en local
 
 ```bash
 npm run dev
 ```
 
-### 7. Desplegar
+### 6. Desplegar
 
 Push a GitHub → Vercel lo despliega automáticamente. Antes de la primera
 build, añade las mismas variables de entorno en Vercel → Project Settings →
