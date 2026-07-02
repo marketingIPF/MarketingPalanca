@@ -222,11 +222,11 @@ export default function PedroDashboard() {
         </p>
       </header>
 
-      {error && (
-        <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
+      {error && items === null && (
+  <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+    {error}
+  </div>
+)}
 
       {items === null ? (
         <SkeletonCards />
