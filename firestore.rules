@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isSuperuser() {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'superuser';
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn();
+      allow write: if isSuperuser() || request.auth.uid == uid;
+    }
+
+    match /content_calendar/{doc} {
+      allow read: if isSignedIn();
+      allow create, delete: if isSuperuser();
+      // Un agente solo puede marcar como completadas SUS tareas asignadas
+      allow update: if isSuperuser() ||
+        (isSignedIn() && resource.data.assignedAgentId == request.auth.uid &&
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']));
+    }
+
+    match /recording_schedule/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isSuperuser();
+    }
+
+    match /content_pillars/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isSuperuser();
+    }
+  }
+}

@@ -1,0 +1,130 @@
+/**
+ * Seed script for content_calendar.
+ * Run once from a trusted environment (Node 22) with the Admin SDK:
+ *   FIREBASE_SERVICE_ACCOUNT='...' npx tsx scripts/seed-calendar.ts
+ *
+ * Dates are anchored to Europe/Madrid. Adjust freely.
+ */
+
+import { Timestamp } from "firebase-admin/firestore";
+import { adminDb } from "@/lib/firebase-admin";
+import type { ContentItem } from "@/lib/types";
+
+const TZ = "Europe/Madrid";
+
+/** Build a Timestamp for a Madrid wall-clock date/time. */
+function madrid(dateISO: string, time: string): Timestamp {
+  const [Y, M, D] = dateISO.split("-").map(Number);
+  const [h, min] = time.split(":").map(Number);
+  const guess = Date.UTC(Y, M - 1, D, h, min);
+  const offset =
+    guess -
+    new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
+  return Timestamp.fromDate(new Date(guess + offset));
+}
+
+type Seed = Omit<ContentItem, "id" | "createdAt" | "updatedAt">;
+
+const items: Seed[] = [
+  // ── Ayer 1 de julio: reel trend/viral ya PUBLICADO ──────────────
+  {
+    title: "Reel trend: sonido viral con recorrido de piso reformado",
+    description:
+      "Adaptación del trend del momento aplicado a una vivienda de la cartera. Publicado el 1 de julio.",
+    platform: "instagram_reels",
+    status: "published",
+    pillarId: "trend_virales",
+    isReel: true,
+    publishDate: madrid("2026-07-01", "18:30"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  // ── Cola de grabación (dashboard de Pedro) ──────────────────────
+  {
+    title: "Caso real: familia que vendió y compró en Valencia en 45 días",
+    description: "Testimonio en oficina. Formato lista/ranking de pasos.",
+    platform: "instagram_reels",
+    status: "pending_record",
+    pillarId: "casos_reales",
+    isReel: true,
+    publishDate: madrid("2026-07-03", "18:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  {
+    title: "Barrio: qué ver en un paseo por el centro histórico",
+    platform: "youtube_shorts",
+    status: "pending_record",
+    pillarId: "barrio",
+    isReel: true,
+    publishDate: madrid("2026-07-04", "12:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  {
+    title: "Home staging: antes y después de un salón",
+    platform: "tiktok",
+    status: "pending_record",
+    pillarId: "home_staging",
+    isReel: true,
+    publishDate: madrid("2026-07-05", "19:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  // ── Otros estados para poblar el calendario ─────────────────────
+  {
+    title: "Newsletter LIVING · edición de julio",
+    platform: "newsletter",
+    status: "draft",
+    pillarId: null,
+    isReel: false,
+    publishDate: madrid("2026-07-08", "09:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  {
+    title: "Obra nueva: recorrido por Sagunto Fusión 1",
+    platform: "instagram_reels",
+    status: "scheduled",
+    pillarId: "obra_nueva",
+    isReel: true,
+    publishDate: madrid("2026-07-10", "18:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+  {
+    title: "Ficha de propiedad destacada de la semana",
+    platform: "google_business",
+    status: "edited",
+    pillarId: "viviendas",
+    isReel: false,
+    publishDate: madrid("2026-07-07", "10:00"),
+    assignedAgentId: null,
+    recordingEventId: null,
+    createdBy: "system-seed",
+  },
+];
+
+async function run() {
+  const batch = adminDb.batch();
+  const now = Timestamp.now();
+
+  for (const item of items) {
+    const ref = adminDb.collection("content_calendar").doc();
+    batch.set(ref, { ...item, createdAt: now, updatedAt: now });
+  }
+
+  await batch.commit();
+  console.log(`Seeded ${items.length} content items.`);
+}
+
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
