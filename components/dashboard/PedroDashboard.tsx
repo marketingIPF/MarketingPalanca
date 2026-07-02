@@ -8,6 +8,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   collection,
   limit,
@@ -62,7 +63,7 @@ function Badge({ className, children }: { className: string; children: React.Rea
   );
 }
 
-function UrgentCard({ item }: { item: ContentItem }) {
+function UrgentCard({ item, onSelect }: { item: ContentItem; onSelect: (item: ContentItem) => void }) {
   const publish = item.publishDate.toDate();
   const overdue = daysUntil(publish) <= 0;
 
@@ -112,6 +113,7 @@ function UrgentCard({ item }: { item: ContentItem }) {
           </div>
           <button
             type="button"
+            onClick={() => onSelect(item)}
             className="rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2 active:scale-[0.98]"
           >
             Ver detalles
@@ -122,11 +124,22 @@ function UrgentCard({ item }: { item: ContentItem }) {
   );
 }
 
-function SecondaryCard({ item, index }: { item: ContentItem; index: number }) {
+function SecondaryCard({
+  item,
+  index,
+  onSelect,
+}: {
+  item: ContentItem;
+  index: number;
+  onSelect: (item: ContentItem) => void;
+}) {
   const publish = item.publishDate.toDate();
 
   return (
-    <article className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+    <article
+      onClick={() => onSelect(item)}
+      className="group cursor-pointer rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+    >
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <Badge className="bg-gray-100 text-gray-600">Alternativa {index}</Badge>
         {item.platforms.map((p) => (
@@ -184,6 +197,7 @@ function SkeletonCards() {
 export default function PedroDashboard() {
   const [items, setItems] = useState<ContentItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selected, setSelected] = useState<ContentItem | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -257,7 +271,7 @@ export default function PedroDashboard() {
         <EmptyState />
       ) : (
         <div className="space-y-4">
-          <UrgentCard item={urgent} />
+          <UrgentCard item={urgent} onSelect={setSelected} />
           {secondary.length > 0 && (
             <>
               <p className="pt-2 text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -265,13 +279,111 @@ export default function PedroDashboard() {
               </p>
               <div className="grid gap-4 sm:grid-cols-2">
                 {secondary.map((item, i) => (
-                  <SecondaryCard key={item.id} item={item} index={i + 1} />
+                  <SecondaryCard
+                    key={item.id}
+                    item={item}
+                    index={i + 1}
+                    onSelect={setSelected}
+                  />
                 ))}
               </div>
             </>
           )}
         </div>
       )}
+
+      {selected && (
+        <ContentDetailModal item={selected} onClose={() => setSelected(null)} />
+      )}
     </main>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Detail modal                                                        */
+/* ------------------------------------------------------------------ */
+
+const detailDateFmt = new Intl.DateTimeFormat("es-ES", {
+  timeZone: "Europe/Madrid",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function ContentDetailModal({
+  item,
+  onClose,
+}: {
+  item: ContentItem;
+  onClose: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center bg-gray-900/20 p-4 backdrop-blur-sm sm:items-center"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-lg"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-3 flex flex-wrap gap-2">
+          {item.platforms.map((p) => (
+            <Badge key={p} className="bg-gray-100 text-gray-700">
+              {PLATFORM_LABELS[p]}
+            </Badge>
+          ))}
+          <Badge className={STATUS_STYLES[item.status]}>
+            {STATUS_LABELS[item.status]}
+          </Badge>
+        </div>
+
+        <h3 className="text-lg font-semibold text-gray-900">{item.title}</h3>
+
+        {item.pillarId && (
+          <p className="mt-1 text-sm font-medium text-orange-600">
+            {PILLAR_LABELS[item.pillarId]}
+          </p>
+        )}
+
+        {item.description && (
+          <p className="mt-3 text-sm leading-relaxed text-gray-500">
+            {item.description}
+          </p>
+        )}
+
+        {item.notes && (
+          <p className="mt-3 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+            {item.notes}
+          </p>
+        )}
+
+        <dl className="mt-4 space-y-2 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-gray-400">Publicación</dt>
+            <dd className="font-medium capitalize text-gray-900">
+              {detailDateFmt.format(item.publishDate.toDate())}
+            </dd>
+          </div>
+        </dl>
+
+        <div className="mt-6 flex items-center gap-2">
+          <Link
+            href="/calendario"
+            className="flex-1 rounded-xl border border-gray-200 py-2.5 text-center text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+          >
+            Editar en el calendario
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl bg-gray-900 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }

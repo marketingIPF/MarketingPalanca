@@ -86,8 +86,14 @@ async function run() {
       console.warn("Content not found for casting:", casting.name);
       continue;
     }
-    const eventRef = adminDb.collection("recording_schedule").doc();
-    const event: Omit<RecordingEvent, "id"> = {
+    // If this content item is already linked to a recording event (from a
+    // previous run of this script), reuse that same doc and update it
+    // instead of creating a duplicate.
+    const eventRef = content.recordingEventId
+      ? adminDb.collection("recording_schedule").doc(content.recordingEventId)
+      : adminDb.collection("recording_schedule").doc();
+
+    const event: Omit<RecordingEvent, "id" | "createdAt"> = {
       agentId: casting.uid,
       agentName: casting.name,
       type: casting.type,
@@ -96,10 +102,9 @@ async function run() {
       contentItemIds: [content.id],
       contentTitles: [content.title],
       createdBy: "admin-rober",
-      createdAt: now,
       updatedAt: now,
     };
-    batch.set(eventRef, event);
+    batch.set(eventRef, { ...event, createdAt: now }, { merge: true });
     // Back-link the content item to this event
     batch.update(adminDb.collection("content_calendar").doc(content.id), {
       recordingEventId: eventRef.id,
@@ -109,7 +114,7 @@ async function run() {
   }
 
   await batch.commit();
-  console.log(`Seeded ${plan.filter((p) => p.content).length} recording events.`);
+  console.log(`Sembrado/actualizado: ${plan.filter((p) => p.content).length} grabaciones.`);
 }
 
 run().catch((err) => {
