@@ -106,14 +106,14 @@ export default function ContentItemForm({
 
     const payload = {
       title: title.trim(),
-      description: description.trim() || undefined,
+      description: description.trim() || null,
       platforms,
       status,
       pillarId: pillarId || null,
       isReel,
       publishDate: toMadridTimestamp(date, time),
       assignedAgentId: assignedAgentId || null,
-      notes: notes.trim() || undefined,
+      notes: notes.trim() || null,
       updatedAt: Timestamp.now(),
     };
 

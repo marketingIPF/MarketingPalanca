@@ -128,7 +128,7 @@ export default function RecordingEventForm({
       location: location.trim(),
       contentItemIds: contentIds,
       contentTitles: selectedContent.map((c) => c.title),
-      notes: notes.trim() || undefined,
+      notes: notes.trim() || null,
       createdBy: currentUserUid,
       updatedAt: Timestamp.now(),
     };
