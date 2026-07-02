@@ -34,12 +34,17 @@ export default function ContentCard({
       onClick={() => onSelect?.(item)}
       className="group w-full rounded-xl border border-gray-100 bg-white p-2 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-1"
     >
-      <div className="mb-1 flex items-center justify-between gap-1">
-        <span
-          className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${PLATFORM_STYLES[item.platform]}`}
-        >
-          {PLATFORM_SHORT[item.platform]}
-        </span>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-1">
+        <div className="flex flex-wrap gap-1">
+          {item.platforms.map((p) => (
+            <span
+              key={p}
+              className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold ${PLATFORM_STYLES[p]}`}
+            >
+              {PLATFORM_SHORT[p]}
+            </span>
+          ))}
+        </div>
         {item.isReel && (
           <span className="text-[10px] font-medium text-gray-400">Reel</span>
         )}

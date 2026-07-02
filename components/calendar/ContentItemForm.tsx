@@ -74,8 +74,8 @@ export default function ContentItemForm({
 
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
-  const [platform, setPlatform] = useState<Platform>(
-    item?.platform ?? "instagram_reels"
+  const [platforms, setPlatforms] = useState<Platform[]>(
+    item?.platforms ?? ["instagram_reels"]
   );
   const [status, setStatus] = useState<ContentStatus>(item?.status ?? "draft");
   const [pillarId, setPillarId] = useState<PillarId | "">(item?.pillarId ?? "");
@@ -90,17 +90,24 @@ export default function ContentItemForm({
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  function togglePlatform(p: Platform) {
+    setPlatforms((prev) =>
+      prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
+    );
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError(null);
 
     if (!title.trim()) return setFormError("Indica un título.");
+    if (platforms.length === 0) return setFormError("Selecciona al menos una plataforma.");
     if (!date || !time) return setFormError("Indica fecha y hora de publicación.");
 
     const payload = {
       title: title.trim(),
       description: description.trim() || undefined,
-      platform,
+      platforms,
       status,
       pillarId: pillarId || null,
       isReel,
@@ -167,34 +174,42 @@ export default function ContentItemForm({
           />
         </Field>
 
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Plataforma">
-            <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value as Platform)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-            >
-              {PLATFORMS.map((p) => (
-                <option key={p} value={p}>
+        <Field label="Plataformas">
+          <div className="flex flex-wrap gap-2">
+            {PLATFORMS.map((p) => {
+              const active = platforms.includes(p);
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => togglePlatform(p)}
+                  aria-pressed={active}
+                  className={`rounded-full px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+                    active
+                      ? "bg-gray-900 text-white shadow-sm"
+                      : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                  }`}
+                >
                   {PLATFORM_LABELS[p]}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Estado">
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as ContentStatus)}
-              className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {STATUS_LABELS[s]}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
+                </button>
+              );
+            })}
+          </div>
+        </Field>
+
+        <Field label="Estado">
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value as ContentStatus)}
+            className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-sm shadow-sm focus:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/10"
+          >
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {STATUS_LABELS[s]}
+              </option>
+            ))}
+          </select>
+        </Field>
 
         <div className="grid grid-cols-2 gap-4">
           <Field label="Fecha de publicación">
