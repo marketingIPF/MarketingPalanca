@@ -12,7 +12,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { adminAuth, adminDb } from "@/lib/firebase-admin";
+import { getAdminAuth, getAdminDb } from "@/lib/firebase-admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -73,8 +73,8 @@ async function requireSuperuser(req: NextRequest): Promise<string> {
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
   if (!token) throw new Error("UNAUTHENTICATED");
 
-  const decoded = await adminAuth.verifyIdToken(token);
-  const userSnap = await adminDb.collection("users").doc(decoded.uid).get();
+  const decoded = await getAdminAuth().verifyIdToken(token);
+  const userSnap = await getAdminDb().collection("users").doc(decoded.uid).get();
 
   if (!userSnap.exists || userSnap.data()?.role !== "superuser") {
     throw new Error("FORBIDDEN");
@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
 
     const { start, end, label } = getTomorrowRange();
 
-    const snapshot = await adminDb
+    const snapshot = await getAdminDb()
       .collection("recording_schedule")
       .where("startAt", ">=", Timestamp.fromDate(start))
       .where("startAt", "<", Timestamp.fromDate(end))

@@ -8,8 +8,10 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import type { ContentItem, RecordingEvent } from "@/lib/types";
+
+const adminDb = getAdminDb();
 
 const TZ = "Europe/Madrid";
 

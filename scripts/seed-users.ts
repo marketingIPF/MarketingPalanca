@@ -16,8 +16,10 @@
  */
 
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "@/lib/firebase-admin";
+import { getAdminDb } from "@/lib/firebase-admin";
 import type { UserProfile, UserRole } from "@/lib/types";
+
+const adminDb = getAdminDb();
 
 interface RosterEntry {
   uid: string;

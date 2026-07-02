@@ -2,22 +2,42 @@
  * Firebase Admin SDK — server-side only (API routes, server components).
  * Requires FIREBASE_SERVICE_ACCOUNT env var: the service-account JSON
  * stringified in a single line.
+ *
+ * Initialization is LAZY (deferred to first use inside a request handler)
+ * so that Next.js's build-time "collecting page data" step never touches
+ * process.env before Vercel injects runtime variables — it only throws if
+ * something actually calls getAdminDb()/getAdminAuth() without the env var
+ * present at request time.
  */
 
-import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import { getFirestore } from "firebase-admin/firestore";
+import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
+import { getAuth, type Auth } from "firebase-admin/auth";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
-function getServiceAccount() {
+let cachedApp: App | null = null;
+
+function getAdminApp(): App {
+  if (cachedApp) return cachedApp;
+
+  const existing = getApps()[0];
+  if (existing) {
+    cachedApp = existing;
+    return cachedApp;
+  }
+
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
   if (!raw) {
     throw new Error("Missing FIREBASE_SERVICE_ACCOUNT environment variable");
   }
-  return JSON.parse(raw);
+
+  cachedApp = initializeApp({ credential: cert(JSON.parse(raw)) });
+  return cachedApp;
 }
 
-const adminApp =
-  getApps()[0] ?? initializeApp({ credential: cert(getServiceAccount()) });
+export function getAdminDb(): Firestore {
+  return getFirestore(getAdminApp());
+}
 
-export const adminDb = getFirestore(adminApp);
-export const adminAuth = getAuth(adminApp);
+export function getAdminAuth(): Auth {
+  return getAuth(getAdminApp());
+}
