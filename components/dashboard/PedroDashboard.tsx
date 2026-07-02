@@ -186,26 +186,49 @@ export default function PedroDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const q = query(
-      collection(db, "content_calendar"),
-      where("status", "==", "pending_record"),
-      orderBy("publishDate", "asc"),
-      limit(3)
-    );
+    let cancelled = false;
+    let retried = false;
+    let unsubscribe: (() => void) | undefined;
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snap) => {
-        setItems(
-          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ContentItem)
-        );
-      },
-      (err) => {
-        console.error("Dashboard query error:", err);
-        setError("No se ha podido cargar la cola de grabación.");
-      }
-    );
-    return unsubscribe;
+    function subscribe() {
+      const q = query(
+        collection(db, "content_calendar"),
+        where("status", "==", "pending_record"),
+        orderBy("publishDate", "asc"),
+        limit(3)
+      );
+
+      unsubscribe = onSnapshot(
+        q,
+        (snap) => {
+          if (cancelled) return;
+          setError(null);
+          setItems(
+            snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ContentItem)
+          );
+        },
+        (err) => {
+          console.error("Dashboard query error:", err);
+          // First failure right after login is often a transient race while
+          // the Firestore realtime channel connects — retry once silently
+          // before bothering the person with an error message.
+          if (!retried) {
+            retried = true;
+            setTimeout(() => {
+              if (!cancelled) subscribe();
+            }, 1200);
+          } else if (!cancelled) {
+            setError("No se ha podido cargar la cola de grabación.");
+          }
+        }
+      );
+    }
+
+    subscribe();
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
   }, []);
 
   const [urgent, ...secondary] = useMemo(() => items ?? [], [items]);
@@ -223,10 +246,10 @@ export default function PedroDashboard() {
       </header>
 
       {error && items === null && (
-  <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
-    {error}
-  </div>
-)}
+        <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {items === null ? (
         <SkeletonCards />
