@@ -79,7 +79,8 @@ export interface ContentItem {
   id: string;
   title: string;
   description?: string;
-  platform: Platform;
+  /** Can publish to more than one platform at once (e.g. IG Reels + TikTok). */
+  platforms: Platform[];
   status: ContentStatus;
   pillarId: PillarId | null;
   /** True if this piece counts toward the 3-reels-per-week quota */

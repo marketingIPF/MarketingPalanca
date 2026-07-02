@@ -9,10 +9,14 @@
  */
 
 import { useMemo, useState } from "react";
+import { deleteDoc, doc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { useAuth } from "@/hooks/useAuth";
 import type { ContentItem, Platform } from "@/lib/types";
 import { dayKey, useContentCalendar } from "@/hooks/useContentCalendar";
 import ContentCard from "./ContentCard";
 import PlatformFilter from "./PlatformFilter";
+import ContentItemForm from "./ContentItemForm";
 
 const TZ = "Europe/Madrid";
 const WEEKDAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -72,10 +76,15 @@ function madridMidnightUtc(c: Civil): Date {
 /* -------------------------------------------------------------------- */
 
 export default function CalendarGrid() {
+  const { firebaseUser, profile } = useAuth();
+  const isSuperuser = profile?.role === "superuser";
+
   const [view, setView] = useState<View>("month");
   const [anchor, setAnchor] = useState<Civil>(civilToday());
   const [platforms, setPlatforms] = useState<Platform[]>([]);
   const [selected, setSelected] = useState<ContentItem | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<ContentItem | null>(null);
 
   const today = useMemo(() => civilKey(civilToday()), []);
 
@@ -127,6 +136,18 @@ export default function CalendarGrid() {
         </div>
 
         <div className="flex items-center gap-2">
+          {isSuperuser && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditing(null);
+                setShowForm(true);
+              }}
+              className="rounded-xl bg-gray-900 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:bg-gray-800 hover:shadow-md"
+            >
+              + Nuevo contenido
+            </button>
+          )}
           {/* View toggle */}
           <div className="inline-flex rounded-xl border border-gray-200 bg-white p-0.5 shadow-sm">
             {(["month", "week"] as View[]).map((v) => (
@@ -260,8 +281,44 @@ export default function CalendarGrid() {
         )}
       </div>
 
+      {showForm && firebaseUser && (
+        <ContentItemForm
+          currentUserUid={firebaseUser.uid}
+          item={editing ?? undefined}
+          onSaved={() => {
+            setShowForm(false);
+            setEditing(null);
+          }}
+          onCancel={() => {
+            setShowForm(false);
+            setEditing(null);
+          }}
+        />
+      )}
+
       {selected && (
-        <ContentDetail item={selected} onClose={() => setSelected(null)} />
+        <ContentDetail
+          item={selected}
+          isSuperuser={isSuperuser}
+          onClose={() => setSelected(null)}
+          onEdit={() => {
+            setEditing(selected);
+            setSelected(null);
+            setShowForm(true);
+          }}
+          onDelete={async () => {
+            if (!confirm(`¿Eliminar "${selected.title}"? Esta acción no se puede deshacer.`)) {
+              return;
+            }
+            try {
+              await deleteDoc(doc(db, "content_calendar", selected.id));
+              setSelected(null);
+            } catch (err) {
+              console.error("Delete content item error:", err);
+              alert("No se ha podido eliminar el contenido.");
+            }
+          }}
+        />
       )}
     </main>
   );
@@ -271,10 +328,16 @@ export default function CalendarGrid() {
 
 function ContentDetail({
   item,
+  isSuperuser,
   onClose,
+  onEdit,
+  onDelete,
 }: {
   item: ContentItem;
+  isSuperuser: boolean;
   onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }) {
   const fmt = new Intl.DateTimeFormat("es-ES", {
     timeZone: TZ,
@@ -315,6 +378,25 @@ function ContentDetail({
         >
           Cerrar
         </button>
+
+        {isSuperuser && (
+          <div className="mt-2 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onEdit}
+              className="flex-1 rounded-xl border border-gray-200 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
+            >
+              Editar
+            </button>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="flex-1 rounded-xl border border-red-100 py-2.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+            >
+              Eliminar
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

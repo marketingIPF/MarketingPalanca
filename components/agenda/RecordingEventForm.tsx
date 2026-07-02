@@ -272,7 +272,7 @@ export default function RecordingEventForm({
                     {c.title}
                   </span>
                   <span className="shrink-0 text-xs text-gray-400">
-                    {PLATFORM_SHORT[c.platform]}
+                    {c.platforms.map((p) => PLATFORM_SHORT[p]).join(" + ")}
                   </span>
                 </label>
               );

@@ -33,7 +33,7 @@ interface RosterEntry {
 
 const roster: RosterEntry[] = [
   // ── Super usuarios (admins / editores) ──────────────────────────
-  { uid: "pedro", name: "Pedro", email: "pedro@inmobiliariapalanca.com", role: "superuser", title: "Grabación y edición de contenido", initialPassword: "CambiarPassword2026" },
+  { uid: "pedro", name: "Pedro", email: "facturacion@inmobiliariapalanca.com", role: "superuser", title: "Grabación y edición de contenido", initialPassword: "CambiarPassword2026" },
   { uid: "admin-rober", name: "Roberto", email: "marketing@inmobiliariapalanca.com", role: "superuser", title: "Responsable de marketing", initialPassword: "CambiarPassword2026" },
   { uid: "admin-almudena", name: "Almudena Gálvez", email: "agalvez@inmobiliariapalanca.com", role: "superuser", title: "Coordinadora", initialPassword: "CambiarPassword2026" },
   { uid: "686387378", name: "Jose Miguel Palanca", email: "jose@inmobiliariapalanca.com", role: "superuser", title: "Codirector", initialPassword: "696460043" },

@@ -186,7 +186,7 @@ export default function WeeklyQuotaTracker() {
                   <p className="mt-0.5 text-xs text-gray-500">
                     {reel.pillarId ? PILLAR_LABELS[reel.pillarId] : "Sin pilar"}
                     <span className="mx-1.5 text-gray-300">·</span>
-                    {PLATFORM_SHORT[reel.platform]}
+                    {reel.platforms.map((p) => PLATFORM_SHORT[p]).join(" + ")}
                   </p>
                 </div>
                 <span

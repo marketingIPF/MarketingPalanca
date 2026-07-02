@@ -74,9 +74,11 @@ function UrgentCard({ item }: { item: ContentItem }) {
           <Badge className={overdue ? "bg-red-50 text-red-700" : "bg-orange-50 text-orange-700"}>
             {overdue ? "⚠ Prioridad máxima" : "🔥 Contenido urgente"}
           </Badge>
-          <Badge className="bg-gray-100 text-gray-700">
-            {PLATFORM_LABELS[item.platform]}
-          </Badge>
+          {item.platforms.map((p) => (
+            <Badge key={p} className="bg-gray-100 text-gray-700">
+              {PLATFORM_LABELS[p]}
+            </Badge>
+          ))}
           <Badge className={STATUS_STYLES[item.status]}>
             {STATUS_LABELS[item.status]}
           </Badge>
@@ -125,11 +127,13 @@ function SecondaryCard({ item, index }: { item: ContentItem; index: number }) {
 
   return (
     <article className="group rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex flex-wrap items-center gap-2">
         <Badge className="bg-gray-100 text-gray-600">Alternativa {index}</Badge>
-        <Badge className="bg-gray-50 text-gray-500">
-          {PLATFORM_LABELS[item.platform]}
-        </Badge>
+        {item.platforms.map((p) => (
+          <Badge key={p} className="bg-gray-50 text-gray-500">
+            {PLATFORM_LABELS[p]}
+          </Badge>
+        ))}
       </div>
       <h3 className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors duration-200">
         {item.title}

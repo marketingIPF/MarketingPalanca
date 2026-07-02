@@ -66,7 +66,7 @@ export function useContentCalendar(
     if (!items) return null;
     if (!platformFilter || platformFilter.length === 0) return items;
     const set = new Set(platformFilter);
-    return items.filter((it) => set.has(it.platform));
+    return items.filter((it) => it.platforms.some((p) => set.has(p)));
   }, [items, platformFilter]);
 
   const byDay = useMemo(() => {

@@ -182,7 +182,7 @@ export default function ProfileView({
                   <p className="mt-0.5 text-xs text-gray-400">
                     {item.pillarId ? PILLAR_LABELS[item.pillarId] : "Sin pilar"}
                     <span className="mx-1.5">·</span>
-                    {PLATFORM_SHORT[item.platform]}
+                    {item.platforms.map((p) => PLATFORM_SHORT[p]).join(" + ")}
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
