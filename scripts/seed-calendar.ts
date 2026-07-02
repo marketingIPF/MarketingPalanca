@@ -33,7 +33,7 @@ const items: Seed[] = [
     title: "Reel trend: sonido viral con recorrido de piso reformado",
     description:
       "Adaptación del trend del momento aplicado a una vivienda de la cartera. Publicado el 1 de julio.",
-    platforms: "instagram_reels",
+    platforms: ["instagram_reels", "tiktok"],
     status: "published",
     pillarId: "trend_virales",
     isReel: true,
@@ -46,7 +46,7 @@ const items: Seed[] = [
   {
     title: "Caso real: familia que vendió y compró en Valencia en 45 días",
     description: "Testimonio en oficina. Formato lista/ranking de pasos.",
-    platforms: "instagram_reels",
+    platforms: ["instagram_reels"],
     status: "pending_record",
     pillarId: "casos_reales",
     isReel: true,
@@ -57,7 +57,7 @@ const items: Seed[] = [
   },
   {
     title: "Barrio: qué ver en un paseo por el centro histórico",
-    platforms: "youtube_shorts",
+    platforms: ["youtube_shorts"],
     status: "pending_record",
     pillarId: "barrio",
     isReel: true,
@@ -68,7 +68,7 @@ const items: Seed[] = [
   },
   {
     title: "Home staging: antes y después de un salón",
-    platforms: "tiktok",
+    platforms: ["tiktok", "instagram_reels"],
     status: "pending_record",
     pillarId: "home_staging",
     isReel: true,
@@ -80,7 +80,7 @@ const items: Seed[] = [
   // ── Otros estados para poblar el calendario ─────────────────────
   {
     title: "Newsletter LIVING · edición de julio",
-    platforms: "newsletter",
+    platforms: ["newsletter"],
     status: "draft",
     pillarId: null,
     isReel: false,
@@ -91,7 +91,7 @@ const items: Seed[] = [
   },
   {
     title: "Obra nueva: recorrido por Sagunto Fusión 1",
-    platforms: "instagram_reels",
+    platforms: ["instagram_reels", "facebook_reels"],
     status: "scheduled",
     pillarId: "obra_nueva",
     isReel: true,
@@ -102,7 +102,7 @@ const items: Seed[] = [
   },
   {
     title: "Ficha de propiedad destacada de la semana",
-    platforms: "google_business",
+    platforms: ["google_business"],
     status: "edited",
     pillarId: "viviendas",
     isReel: false,
