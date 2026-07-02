@@ -25,53 +25,88 @@ export function useAgentActivity(uid: string | null) {
   const [assignedContent, setAssignedContent] = useState<ContentItem[] | null>(
     null
   );
-  const [error, setError] = useState<string | null>(null);
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [contentError, setContentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!uid) return;
 
-    const eventsQ = query(
-      collection(db, "recording_schedule"),
-      where("agentId", "==", uid),
-      where("startAt", ">=", Timestamp.now()),
-      orderBy("startAt", "asc"),
-      limit(5)
-    );
-    const unsubEvents = onSnapshot(
-      eventsQ,
-      (snap) =>
-        setUpcomingEvents(
-          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as RecordingEvent)
-        ),
-      (err) => {
-        console.error("Agent events query error:", err);
-        setError("No se han podido cargar las próximas grabaciones.");
-      }
-    );
+    let cancelled = false;
+    let eventsRetried = false;
+    let contentRetried = false;
+    let unsubEvents: (() => void) | undefined;
+    let unsubContent: (() => void) | undefined;
 
-    const contentQ = query(
-      collection(db, "content_calendar"),
-      where("assignedAgentId", "==", uid),
-      where("status", "!=", "published"),
-      orderBy("status"),
-      orderBy("publishDate", "asc"),
-      limit(10)
-    );
-    const unsubContent = onSnapshot(
-      contentQ,
-      (snap) =>
-        setAssignedContent(
-          snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ContentItem)
-        ),
-      (err) => {
-        console.error("Agent content query error:", err);
-        setError("No se han podido cargar los contenidos asignados.");
-      }
-    );
+    function subscribeEvents() {
+      const eventsQ = query(
+        collection(db, "recording_schedule"),
+        where("agentId", "==", uid),
+        where("startAt", ">=", Timestamp.now()),
+        orderBy("startAt", "asc"),
+        limit(5)
+      );
+      unsubEvents = onSnapshot(
+        eventsQ,
+        (snap) => {
+          if (cancelled) return;
+          setEventsError(null);
+          setUpcomingEvents(
+            snap.docs.map((d) => ({ id: d.id, ...d.data() }) as RecordingEvent)
+          );
+        },
+        (err) => {
+          console.error("Agent events query error:", err);
+          if (!eventsRetried) {
+            eventsRetried = true;
+            setTimeout(() => {
+              if (!cancelled) subscribeEvents();
+            }, 1200);
+          } else if (!cancelled) {
+            setEventsError("No se han podido cargar las próximas grabaciones.");
+          }
+        }
+      );
+    }
+
+    function subscribeContent() {
+      const contentQ = query(
+        collection(db, "content_calendar"),
+        where("assignedAgentId", "==", uid),
+        where("status", "!=", "published"),
+        orderBy("status"),
+        orderBy("publishDate", "asc"),
+        limit(10)
+      );
+      unsubContent = onSnapshot(
+        contentQ,
+        (snap) => {
+          if (cancelled) return;
+          setContentError(null);
+          setAssignedContent(
+            snap.docs.map((d) => ({ id: d.id, ...d.data() }) as ContentItem)
+          );
+        },
+        (err) => {
+          console.error("Agent content query error:", err);
+          if (!contentRetried) {
+            contentRetried = true;
+            setTimeout(() => {
+              if (!cancelled) subscribeContent();
+            }, 1200);
+          } else if (!cancelled) {
+            setContentError("No se han podido cargar los contenidos asignados.");
+          }
+        }
+      );
+    }
+
+    subscribeEvents();
+    subscribeContent();
 
     return () => {
-      unsubEvents();
-      unsubContent();
+      cancelled = true;
+      unsubEvents?.();
+      unsubContent?.();
     };
   }, [uid]);
 
@@ -79,6 +114,6 @@ export function useAgentActivity(uid: string | null) {
     upcomingEvents,
     assignedContent,
     loading: upcomingEvents === null || assignedContent === null,
-    error,
+    error: eventsError ?? contentError,
   };
 }
