@@ -94,9 +94,16 @@ async function run() {
   }
   console.log(`Auth: ${roster.length} cuentas creadas/actualizadas.`);
 
-  // Firestore profiles can go in a single batch.
+  // Firestore profiles can go in a single batch. First check which docs
+  // already have `mustChangePassword` set, so re-running this script never
+  // resets the flag for someone who already changed their password.
   const batch = adminDb.batch();
   for (const r of roster) {
+    const ref = adminDb.collection("users").doc(r.uid);
+    const existing = await ref.get();
+    const alreadyTracksFlag =
+      existing.exists && typeof existing.data()?.mustChangePassword === "boolean";
+
     const profile: UserProfile = {
       uid: r.uid,
       displayName: r.name,
@@ -106,11 +113,12 @@ async function run() {
       title: r.title,
       stats: { videosRecordedThisMonth: 0, pendingTasksThisWeek: 0 },
       active: true,
+      ...(alreadyTracksFlag ? {} : { mustChangePassword: true }),
       createdAt: now,
       updatedAt: now,
     };
     // merge:true so re-running never clobbers stats that already exist
-    batch.set(adminDb.collection("users").doc(r.uid), profile, { merge: true });
+    batch.set(ref, profile, { merge: true });
   }
   await batch.commit();
 

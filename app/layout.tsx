@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import NavBar from "@/components/layout/NavBar";
+import PasswordGate from "@/components/auth/PasswordGate";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -19,7 +20,7 @@ export default function RootLayout({
     <html lang="es">
       <body className={`${inter.variable} min-h-screen bg-[#F9FAFB] font-sans antialiased`}>
         <NavBar />
-        {children}
+        <PasswordGate>{children}</PasswordGate>
       </body>
     </html>
   );

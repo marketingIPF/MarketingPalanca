@@ -67,6 +67,8 @@ export interface UserProfile {
     pendingTasksThisWeek: number;
   };
   active: boolean;
+  /** True until the person sets their own password for the first time. */
+  mustChangePassword?: boolean;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }

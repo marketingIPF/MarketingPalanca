@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { doc, onSnapshot, Timestamp, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useAgentActivity } from "@/hooks/useAgentActivity";
+import ChangePasswordForm from "@/components/auth/ChangePasswordForm";
 import type { UserProfile } from "@/lib/types";
 import {
   EVENT_TYPE_LABELS,
@@ -206,6 +207,19 @@ export default function ProfileView({
           </ul>
         )}
       </section>
+
+      {/* Change password — own profile only */}
+      {isOwnProfile && (
+        <section className="mt-6 rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+          <h2 className="mb-1 text-sm font-semibold text-gray-900">
+            Contraseña
+          </h2>
+          <p className="mb-4 text-sm text-gray-500">
+            Cambia tu contraseña cuando quieras.
+          </p>
+          <ChangePasswordForm mode="voluntary" />
+        </section>
+      )}
     </main>
   );
 }
