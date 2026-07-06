@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 const LINKS = [
   { href: "/dashboard", label: "Grabación", roles: ["superuser"] as const },
   { href: "/calendario", label: "Calendario", roles: ["superuser", "agent"] as const },
-  { href: "/series", label: "3 reels/semana", roles: ["superuser"] as const },
+  { href: "/series", label: "Cuotas", roles: ["superuser"] as const },
   { href: "/agenda", label: "Agenda", roles: ["superuser", "agent"] as const },
   { href: "/admin", label: "Admin", roles: ["superuser"] as const },
 ];
@@ -30,9 +30,14 @@ export default function NavBar() {
         <div className="flex items-center gap-6">
           <Link
             href="/dashboard"
-            className="text-sm font-semibold tracking-tight text-gray-900"
+            className="flex items-center"
+            aria-label="RK Palanca · Marketing Hub"
           >
-            RK Marketing Hub
+            <img
+              src="/logo-rk-palanca.svg"
+              alt="RK Palanca Inmobiliaria"
+              className="h-7 w-auto"
+            />
           </Link>
           <nav className="hidden items-center gap-1 sm:flex">
             {visibleLinks.map((l) => {

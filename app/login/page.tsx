@@ -33,8 +33,12 @@ export default function LoginPage() {
         onSubmit={handleSubmit}
         className="w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-8 shadow-md"
       >
-        <p className="text-sm font-medium text-orange-600">RK Palanca Fontestad</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900">
+        <img
+          src="/logo-rk-palanca.svg"
+          alt="RK Palanca Inmobiliaria"
+          className="mb-6 h-8 w-auto"
+        />
+        <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
           Marketing Hub
         </h1>
         <p className="mt-2 text-sm text-gray-500">
