@@ -32,7 +32,7 @@ function madridMidnightUtc(daysFromNow: number): Date {
   const offset =
     guess -
     new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
-  return new Date(guess + offset);
+  return new Date(guess - offset);
 }
 
 export function useAdminStats() {

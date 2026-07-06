@@ -70,7 +70,7 @@ function madridMidnightUtc(c: Civil): Date {
     new Date(
       new Date(guess).toLocaleString("en-US", { timeZone: TZ })
     ).getTime();
-  return new Date(guess + offset);
+  return new Date(guess - offset);
 }
 
 /* -------------------------------------------------------------------- */

@@ -27,11 +27,17 @@ const PILLARS = Object.keys(PILLAR_LABELS) as PillarId[];
 function toMadridTimestamp(dateStr: string, timeStr: string): Timestamp {
   const [Y, M, D] = dateStr.split("-").map(Number);
   const [h, min] = timeStr.split(":").map(Number);
-  const guess = Date.UTC(Y, M - 1, D, h, min);
-  const offset =
-    guess -
-    new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
-  return Timestamp.fromDate(new Date(guess + offset));
+  // We want the UTC instant that, when shown in Madrid, reads as the wall
+  // clock the user typed. Strategy: take the naive UTC guess, ask what that
+  // instant looks like in Madrid, measure the gap, and correct by it.
+  const naiveUtc = Date.UTC(Y, M - 1, D, h, min);
+  const asMadrid = new Date(
+    new Date(naiveUtc).toLocaleString("en-US", { timeZone: TZ })
+  ).getTime();
+  // asMadrid - naiveUtc is +offset (e.g. +2h in summer). To turn the typed
+  // wall clock into the correct UTC instant we SUBTRACT that offset.
+  const offset = asMadrid - naiveUtc;
+  return Timestamp.fromDate(new Date(naiveUtc - offset));
 }
 
 function toDateInput(ts: Timestamp): string {

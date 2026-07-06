@@ -44,7 +44,7 @@ function madridMidnightUtc(c: { y: number; m: number; d: number }): Date {
   const offset =
     guess -
     new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
-  return new Date(guess + offset);
+  return new Date(guess - offset);
 }
 
 const dayHeaderFmt = new Intl.DateTimeFormat("es-ES", {

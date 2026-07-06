@@ -32,7 +32,7 @@ function toMadridTimestamp(dateStr: string, timeStr: string): Timestamp {
   const offset =
     guess -
     new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
-  return Timestamp.fromDate(new Date(guess + offset));
+  return Timestamp.fromDate(new Date(guess - offset));
 }
 
 function toDateInput(ts: Timestamp): string {

@@ -22,7 +22,7 @@ function madrid(dateISO: string, time: string): Timestamp {
   const offset =
     guess -
     new Date(new Date(guess).toLocaleString("en-US", { timeZone: TZ })).getTime();
-  return Timestamp.fromDate(new Date(guess + offset));
+  return Timestamp.fromDate(new Date(guess - offset));
 }
 
 type Seed = Omit<ContentItem, "id" | "createdAt" | "updatedAt">;
