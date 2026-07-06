@@ -12,7 +12,7 @@
 .env
 .env.local
 .env*.local
-*firebase-adminsdk*.json
+service-account.json
 
 # misc
 .DS_Store

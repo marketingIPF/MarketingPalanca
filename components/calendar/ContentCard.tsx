@@ -45,9 +45,14 @@ export default function ContentCard({
             </span>
           ))}
         </div>
-        {item.isReel && (
-          <span className="text-[10px] font-medium text-gray-400">Reel</span>
-        )}
+        <div className="flex shrink-0 items-center gap-1.5">
+          {item.isReel && (
+            <span className="text-[10px] font-medium text-gray-400">Reel</span>
+          )}
+          {item.isStory && (
+            <span className="text-[10px] font-medium text-gray-400">Story</span>
+          )}
+        </div>
       </div>
 
       <p className="line-clamp-2 text-xs font-medium leading-snug text-gray-900">

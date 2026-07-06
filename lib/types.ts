@@ -87,6 +87,8 @@ export interface ContentItem {
   pillarId: PillarId | null;
   /** True if this piece counts toward the 3-reels-per-week quota */
   isReel: boolean;
+  /** True if this piece counts toward the 5-stories-per-week quota (Mon-Fri) */
+  isStory: boolean;
   /** Target publication date/time */
   publishDate: Timestamp;
   /** Agent featured in the content (if any) */

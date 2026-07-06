@@ -80,6 +80,7 @@ export default function ContentItemForm({
   const [status, setStatus] = useState<ContentStatus>(item?.status ?? "draft");
   const [pillarId, setPillarId] = useState<PillarId | "">(item?.pillarId ?? "");
   const [isReel, setIsReel] = useState(item?.isReel ?? true);
+  const [isStory, setIsStory] = useState(item?.isStory ?? false);
   const [date, setDate] = useState(item ? toDateInput(item.publishDate) : todayInput());
   const [time, setTime] = useState(item ? toTimeInput(item.publishDate) : "18:00");
   const [assignedAgentId, setAssignedAgentId] = useState(
@@ -91,9 +92,16 @@ export default function ContentItemForm({
   const [formError, setFormError] = useState<string | null>(null);
 
   function togglePlatform(p: Platform) {
+    const turningOn = !platforms.includes(p);
     setPlatforms((prev) =>
       prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]
     );
+    // Selecting these platforms auto-enables their matching weekly quota —
+    // it never auto-disables, so a person can still opt out manually.
+    if (turningOn) {
+      if (p === "instagram_reels") setIsReel(true);
+      if (p === "instagram_stories") setIsStory(true);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -111,6 +119,7 @@ export default function ContentItemForm({
       status,
       pillarId: pillarId || null,
       isReel,
+      isStory,
       publishDate: toMadridTimestamp(date, time),
       assignedAgentId: assignedAgentId || null,
       notes: notes.trim() || null,
@@ -268,6 +277,16 @@ export default function ContentItemForm({
             className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
           />
           Cuenta para la cuota de 3 reels/semana
+        </label>
+
+        <label className="flex items-center gap-2.5 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            checked={isStory}
+            onChange={(e) => setIsStory(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+          />
+          Cuenta para la cuota de 5 stories/semana (lun-vie)
         </label>
 
         <Field label="Notas (opcional)">
